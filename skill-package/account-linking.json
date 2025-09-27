@@ -3,7 +3,7 @@
     "type": "AUTH_CODE",
     "authorizationUrl": "https://dexter.cash/mcp/authorize",
     "accessTokenUrl": "https://dexter.cash/mcp/token",
-    "clientId": "dcr_2c2e96cbd8ea217011e8fb5904a2a43b",
+    "clientId": "dcr_80fa04c535923bb68a61ddca5aa6046c",
     "clientSecret": "unused-client-secret",
     "scopes": [
       "wallet.read",
@@ -16,7 +16,10 @@
     "redirectUrls": [
       "https://pitangui.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
       "https://layla.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
-      "https://alexa.amazon.co.jp/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d"
+      "https://alexa.amazon.co.jp/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
+      "https://alexa.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
+      "https://alexa.amazon.co.uk/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
+      "https://skills-store.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d"
     ]
   }
 }

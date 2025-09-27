@@ -119,11 +119,14 @@ codelexa/
 - Update the Express handler if the intent shape changes.
 
 ## Account Linking
-This skill uses Dexter’s OAuth flow (PKCE). The production manifest references client ID `dcr_2c2e96cbd8ea217011e8fb5904a2a43b` with these redirects:
+This skill uses Dexter’s OAuth flow (PKCE). The production manifest references client ID `dcr_80fa04c535923bb68a61ddca5aa6046c` with these redirects:
 
 - https://pitangui.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d
 - https://layla.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d
+- https://alexa.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d
+- https://alexa.amazon.co.uk/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d
 - https://alexa.amazon.co.jp/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d
+- https://skills-store.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d
 
 To mint a new client, run:
 
@@ -134,7 +137,10 @@ curl -X POST https://dexter.cash/mcp/dcr/register \
     "redirect_uris": [
       "https://pitangui.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
       "https://layla.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
-      "https://alexa.amazon.co.jp/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d"
+      "https://alexa.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
+      "https://alexa.amazon.co.uk/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
+      "https://alexa.amazon.co.jp/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
+      "https://skills-store.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d"
     ],
     "grant_types": ["authorization_code"],
     "response_types": ["code"],
