@@ -14,6 +14,17 @@ const RUNNER_PATH = '/home/branchmanager/bin/codex-task-runner.py';
 const STATUS_PATH = path.join(process.env.HOME || '/home/branchmanager', '.codex', 'codelexa-status.json');
 const PORT = process.env.CODELEXA_PORT || 4090;
 
+const SMOKE_TEST_PROMPT = `Run the full smoke test suite across all deployed services (dexter API/FE, branch.bet, pumpstreams, fantasy, redis, etc.).
+Report service health, failing checks, and remediation actions. Keep the final summary under 450 characters and highlight any failures.`;
+
+const INBOX_SUMMARY_PROMPT = `Summarize today's messages for branch@branch.bet.
+Include count of new emails, highlight high-priority alerts, financial notices, and GitHub advisories. Mention items that need follow-up.
+Return a concise summary under 400 characters suitable for speech.`;
+
+const POWER_RANKINGS_PROMPT = `Generate the latest fantasy football power rankings for the league.
+Rank teams with brief rationale, note key matchups, and email the full write-up to branch@branch.bet with subject "Fantasy Power Rankings".
+Return a spoken summary under 450 characters listing the top contenders.`;
+
 function loadStatusEntries() {
   try {
     const raw = fs.readFileSync(STATUS_PATH, 'utf-8');
@@ -157,6 +168,51 @@ const RunTaskIntentHandler = {
   }
 };
 
+const RunSmokeTestsIntentHandler = {
+  canHandle(handlerInput) {
+    return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+      && Alexa.getIntentName(handlerInput.requestEnvelope) === 'RunSmokeTestsIntent';
+  },
+  handle(handlerInput) {
+    enqueueTask(SMOKE_TEST_PROMPT);
+    const speakOutput = 'Starting the smoke tests. I will report the results when Codex finishes.';
+    return handlerInput.responseBuilder
+      .speak(speakOutput)
+      .withShouldEndSession(true)
+      .getResponse();
+  }
+};
+
+const SummarizeInboxIntentHandler = {
+  canHandle(handlerInput) {
+    return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+      && Alexa.getIntentName(handlerInput.requestEnvelope) === 'SummarizeInboxIntent';
+  },
+  handle(handlerInput) {
+    enqueueTask(INBOX_SUMMARY_PROMPT);
+    const speakOutput = 'Gathering today’s inbox summary. I will let you know once Codex finishes.';
+    return handlerInput.responseBuilder
+      .speak(speakOutput)
+      .withShouldEndSession(true)
+      .getResponse();
+  }
+};
+
+const EmailPowerRankingsIntentHandler = {
+  canHandle(handlerInput) {
+    return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+      && Alexa.getIntentName(handlerInput.requestEnvelope) === 'EmailPowerRankingsIntent';
+  },
+  handle(handlerInput) {
+    enqueueTask(POWER_RANKINGS_PROMPT);
+    const speakOutput = 'Generating the fantasy power rankings and emailing the write-up. I will notify you when it is complete.';
+    return handlerInput.responseBuilder
+      .speak(speakOutput)
+      .withShouldEndSession(true)
+      .getResponse();
+  }
+};
+
 const GetStatusIntentHandler = {
   canHandle(handlerInput) {
     return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -257,6 +313,9 @@ const skillBuilder = Alexa.SkillBuilders.custom()
   .addRequestHandlers(
     LaunchRequestHandler,
     RunTaskIntentHandler,
+    RunSmokeTestsIntentHandler,
+    SummarizeInboxIntentHandler,
+    EmailPowerRankingsIntentHandler,
     GetStatusIntentHandler,
     HelpIntentHandler,
     CancelAndStopIntentHandler,

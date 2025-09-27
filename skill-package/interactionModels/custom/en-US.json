@@ -22,6 +22,36 @@
           ]
         },
         {
+          "name": "RunSmokeTestsIntent",
+          "slots": [],
+          "samples": [
+            "run the smoke tests",
+            "run smoke tests",
+            "execute the smoke test suite",
+            "start the smoke tests"
+          ]
+        },
+        {
+          "name": "SummarizeInboxIntent",
+          "slots": [],
+          "samples": [
+            "summarize today's inbox",
+            "tell me today's email summary",
+            "summarize today's email",
+            "give me the inbox summary"
+          ]
+        },
+        {
+          "name": "EmailPowerRankingsIntent",
+          "slots": [],
+          "samples": [
+            "email me the fantasy power rankings",
+            "send the fantasy power rankings",
+            "generate the fantasy power rankings",
+            "prepare the fantasy power rankings"
+          ]
+        },
+        {
           "name": "GetStatusIntent",
           "slots": [],
           "samples": [

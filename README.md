@@ -26,6 +26,12 @@ Codex webhook running on `branch.bet`.
 - Invocation name: `Codex`
 - `RunTaskIntent` — captures any spoken task and forwards it to Codex
   (`AMAZON.SearchQuery` slot called `task`).
+- `RunSmokeTestsIntent` — fires the smoke test suite across your services and
+  reports the results via email + voice summary.
+- `SummarizeInboxIntent` — asks Codex to summarize the day’s inbox activity and
+  report high-priority items.
+- `EmailPowerRankingsIntent` — generates fantasy league power rankings and
+  emails the write-up to `branch@branch.bet`.
 - `GetStatusIntent` — requests the latest status update from Codex.
 - Built-in `AMAZON.HelpIntent`, `AMAZON.CancelIntent`, `AMAZON.StopIntent` are included.
 
