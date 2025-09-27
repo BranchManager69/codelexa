@@ -5,7 +5,7 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "deploy": "ask deploy --target skill-metadata"
+    "deploy": "ask deploy --target skill-metadata && pm2 restart codelexa --update-env && pm2 save"
   },
   "keywords": [],
   "author": "",
