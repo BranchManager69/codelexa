@@ -134,6 +134,9 @@ codelexa/
   ```
 - Update `skill-package/skill.json` with the new `clientId` (and redirect if it changes), then run `npm run deploy`.
 - Users enabling the skill will be prompted to sign in through Dexter; Alexa stores the bearer token and includes it in each request.
+  The Alexa account-linking API requires a `clientSecret` field, so we store a
+  placeholder (`unused-client-secret`). Dexter’s token endpoint ignores it and
+  relies on PKCE instead.
 
 ## Configuration Cheat Sheet
 | Setting | Default | Purpose | Change when |
