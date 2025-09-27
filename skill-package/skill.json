@@ -1,0 +1,41 @@
+{
+  "manifest": {
+    "manifestVersion": "1.0",
+    "publishingInformation": {
+      "locales": {
+        "en-US": {
+          "name": "Codex",
+          "summary": "Voice gateway to your Codex automation agent.",
+          "description": "Codex lets you speak tasks to your autonomous automation agent. Issue instructions, ask for status updates, and receive completion notifications without leaving Alexa.",
+          "examplePhrases": [
+            "Alexa, ask Codex to refresh the portfolio site",
+            "Alexa, tell Codex to run the nightly report",
+            "Alexa, ask Codex for the latest status"
+          ]
+        }
+      },
+      "isAvailableWorldwide": false,
+      "testingInstructions": "This skill forwards voice tasks to the Codex automation agent hosted on branch.bet. Use the RunTaskIntent for execution and GetStatusIntent to retrieve the latest summary.",
+      "distributionMode": "PRIVATE"
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "https://branch.bet/alexa"
+        }
+      }
+    },
+    "permissions": [
+      {
+        "name": "alexa::devices:all:notifications:write"
+      }
+    ],
+    "privacyAndCompliance": {
+      "allowsPurchases": false,
+      "usesPersonalInfo": true,
+      "isChildDirected": false,
+      "isExportCompliant": true,
+      "containsAds": false
+    }
+  }
+}

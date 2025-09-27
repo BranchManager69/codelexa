@@ -1,0 +1,52 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "codex",
+      "intents": [
+        {
+          "name": "RunTaskIntent",
+          "slots": [
+            {
+              "name": "task",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "ask codex to {task}",
+            "tell codex to {task}",
+            "have codex {task}",
+            "run {task}",
+            "please {task}",
+            "do {task}",
+            "execute {task}"
+          ]
+        },
+        {
+          "name": "GetStatusIntent",
+          "slots": [],
+          "samples": [
+            "what's the status",
+            "check status",
+            "give me an update",
+            "any updates",
+            "what did you do",
+            "read the latest result"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        }
+      ],
+      "types": []
+    }
+  }
+}

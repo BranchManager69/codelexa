@@ -1,0 +1,19 @@
+{
+  "name": "codelexa",
+  "version": "1.0.0",
+  "description": "Command the Codex automation agent through Amazon Alexa. This package contains the skill manifest and interaction model so it can be versioned, reviewed, and published from source control.",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ask-sdk-core": "^2.14.0",
+    "ask-sdk-express-adapter": "^2.14.0",
+    "body-parser": "^2.2.0",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "deploy_settings": {
+    "default": {
+      "skill_id": "amzn1.ask.skill.e8b337b7-5a69-4240-a991-263ea57bc771",
+      "skillInfrastructure": {
+        "type": "none"
+      },
+      "resources": {
+        "skillMetadata": {
+          "src": "skill-package"
+        }
+      }
+    }
+  }
+}
