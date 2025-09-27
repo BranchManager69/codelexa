@@ -4,7 +4,8 @@
   "description": "Command the Codex automation agent through Amazon Alexa. This package contains the skill manifest and interaction model so it can be versioned, reviewed, and published from source control.",
   "main": "server/index.js",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "deploy": "ask deploy --target skill-metadata"
   },
   "keywords": [],
   "author": "",
