@@ -3,7 +3,7 @@
     "type": "AUTH_CODE",
     "authorizationUrl": "https://dexter.cash/mcp/authorize",
     "accessTokenUrl": "https://dexter.cash/mcp/token",
-    "clientId": "dcr_9ed153158feb5e4c8b49fd0368f6cf04",
+    "clientId": "dcr_2c2e96cbd8ea217011e8fb5904a2a43b",
     "clientSecret": "unused-client-secret",
     "scopes": [
       "wallet.read",
@@ -14,7 +14,9 @@
       "dexter.cash"
     ],
     "redirectUrls": [
-      "https://pitang8831.execute-api.us-east-2.amazonaws.com/dev/alexa"
+      "https://pitangui.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
+      "https://layla.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
+      "https://alexa.amazon.co.jp/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d"
     ]
   }
 }

@@ -119,24 +119,32 @@ codelexa/
 - Update the Express handler if the intent shape changes.
 
 ## Account Linking
-- This skill uses Dexter’s OAuth flow (PKCE). The production manifest references client ID `dcr_9ed153158feb5e4c8b49fd0368f6cf04` with redirect `https://pitang8831.execute-api.us-east-2.amazonaws.com/dev/alexa`.
-- To mint a new client, run:
-  ```bash
-  curl -X POST https://dexter.cash/mcp/dcr/register \
-    -H "Content-Type: application/json" \
-    -d '{
-      "redirect_uris": ["https://pitang8831.execute-api.us-east-2.amazonaws.com/dev/alexa"],
-      "grant_types": ["authorization_code"],
-      "response_types": ["code"],
-      "token_endpoint_auth_method": "none",
-      "metadata": { "client_name": "codex-alexa" }
-    }'
-  ```
-- Update `skill-package/skill.json` with the new `clientId` (and redirect if it changes), then run `npm run deploy`.
-- Users enabling the skill will be prompted to sign in through Dexter; Alexa stores the bearer token and includes it in each request.
-  The Alexa account-linking API requires a `clientSecret` field, so we store a
-  placeholder (`unused-client-secret`). Dexter’s token endpoint ignores it and
-  relies on PKCE instead.
+This skill uses Dexter’s OAuth flow (PKCE). The production manifest references client ID `dcr_2c2e96cbd8ea217011e8fb5904a2a43b` with these redirects:
+
+- https://pitangui.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d
+- https://layla.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d
+- https://alexa.amazon.co.jp/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d
+
+To mint a new client, run:
+
+```bash
+curl -X POST https://dexter.cash/mcp/dcr/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "redirect_uris": [
+      "https://pitangui.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
+      "https://layla.amazon.com/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d",
+      "https://alexa.amazon.co.jp/api/skill/link/amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d"
+    ],
+    "grant_types": ["authorization_code"],
+    "response_types": ["code"],
+    "token_endpoint_auth_method": "none",
+    "metadata": { "client_name": "codex-alexa" }
+  }'
+```
+
+After creating the client, update `skill-package/account-linking.json` with the new `clientId` (and any redirect changes), then run `npm run deploy` so the skill manifest and account-linking metadata stay in sync.
+Users enabling the skill will authenticate through Dexter; Alexa stores the resulting bearer and includes it on each request. The Alexa API insists on a `clientSecret` field, so the repo uses a placeholder (`unused-client-secret`); Dexter relies on PKCE and ignores it.
 
 ## Configuration Cheat Sheet
 | Setting | Default | Purpose | Change when |
