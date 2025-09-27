@@ -100,10 +100,10 @@ are provided:
 The handler constructs a synthetic email envelope and streams it into
 `~/bin/codex-task-runner.py`, so all task execution and email notifications reuse
 the existing automation stack. Status intent responses read from
-`~/.codex/task-mail-runner.log` to summarize the most recent completion.
-
-Incoming Alexa requests are signature-checked using Amazon's certificate chain
-before the skill logic runs, so only genuine Alexa traffic is accepted.
+`~/.codex/codelexa-status.json`, which is updated after each task with the voice
+command, Codex summary, and outcome. Incoming Alexa requests are
+signature-checked using Amazon's certificate chain before the skill logic runs,
+so only genuine Alexa traffic is accepted.
 
 Copy `.env.example` to `.env`, fill in the real skill credentials from the Alexa
 developer console, and restart the process so `dotenv` can load them:

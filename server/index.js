@@ -7,12 +7,41 @@ const { ExpressAdapter } = require('ask-sdk-express-adapter');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 const { sendCompletionNotice } = require('./notifier');
+const { verifyAlexaRequest } = require('./signatureVerifier');
 
 const RUNNER_PATH = '/home/branchmanager/bin/codex-task-runner.py';
-const LOG_PATH = path.join(process.env.HOME || '/home/branchmanager', '.codex', 'task-mail-runner.log');
+const STATUS_PATH = path.join(process.env.HOME || '/home/branchmanager', '.codex', 'codelexa-status.json');
 const PORT = process.env.CODELEXA_PORT || 4090;
+
+function loadStatusEntries() {
+  try {
+    const raw = fs.readFileSync(STATUS_PATH, 'utf-8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function recordStatusEntry(entry) {
+  try {
+    const entries = loadStatusEntries();
+    entries.unshift(entry);
+    if (entries.length > 25) {
+      entries.length = 25;
+    }
+    fs.mkdirSync(path.dirname(STATUS_PATH), { recursive: true });
+    fs.writeFileSync(STATUS_PATH, JSON.stringify(entries, null, 2));
+  } catch (err) {
+    console.error('[codelexa] Failed to record status entry', err.message);
+  }
+}
+
+function latestStatusEntry() {
+  const entries = loadStatusEntries();
+  return entries.length ? entries[0] : null;
+}
 
 function enqueueTask(taskText) {
   const messageId = `alexa-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
@@ -28,35 +57,66 @@ function enqueueTask(taskText) {
   ].join('\n');
 
   const proc = spawn('python3', [RUNNER_PATH], {
-    stdio: ['pipe', 'ignore', 'ignore'],
+    stdio: ['pipe', 'pipe', 'pipe'],
     env: process.env
   });
+
+  let stdout = '';
+  let stderr = '';
+
+  if (proc.stdout) {
+    proc.stdout.on('data', chunk => { stdout += chunk.toString(); });
+  }
+  if (proc.stderr) {
+    proc.stderr.on('data', chunk => { stderr += chunk.toString(); });
+  }
 
   proc.stdin.write(email);
   proc.stdin.end();
   proc.on('close', (code) => {
-    if (code !== 0) {
-      console.error(`[codelexa] Runner exited with code ${code}`);
-      return;
-    }
-    sendCompletionNotice(`Codex finished: ${taskText}`);
-  });
-}
+    const resultTimestamp = new Date().toISOString();
+    let notificationText = `Codex finished: ${taskText}`;
+    let summary = '';
+    let status = code === 0 ? 'success' : 'error';
+    let session = null;
+    let recipients = [];
 
-function readLatestStatus() {
-  try {
-    const data = fs.readFileSync(LOG_PATH, 'utf-8');
-    const lines = data.trim().split(/\r?\n/).reverse();
-    for (const line of lines) {
-      if (line.includes('Sent response to')) {
-        return line.replace(/^\[[^\]]+\]\s*/, '');
+    if (stdout.trim()) {
+      try {
+        const lines = stdout.trim().split('\n');
+        const parsed = JSON.parse(lines[lines.length - 1]);
+        summary = parsed.summary || summary;
+        status = parsed.status || status;
+        session = parsed.session || session;
+        recipients = parsed.recipients || recipients;
+        if (summary) {
+          notificationText = summary;
+        }
+      } catch (err) {
+        console.error('[codelexa] Failed to parse runner output', err.message);
       }
     }
-    return null;
-  } catch (err) {
-    console.error('[codelexa] Failed to read status log', err.message);
-    return null;
-  }
+
+    if (code !== 0 && stderr.trim()) {
+      summary = summary || stderr.trim();
+      notificationText = `Codex encountered an error: ${summary}`;
+    }
+
+    recordStatusEntry({
+      timestamp: resultTimestamp,
+      task: taskText,
+      status,
+      summary,
+      session,
+      recipients
+    });
+
+    sendCompletionNotice(notificationText);
+
+    if (code !== 0) {
+      console.error(`[codelexa] Runner exited with code ${code}`);
+    }
+  });
 }
 
 const LaunchRequestHandler = {
@@ -103,15 +163,25 @@ const GetStatusIntentHandler = {
       && Alexa.getIntentName(handlerInput.requestEnvelope) === 'GetStatusIntent';
   },
   handle(handlerInput) {
-    const latest = readLatestStatus();
-    if (!latest) {
+    const entry = latestStatusEntry();
+    if (!entry) {
       return handlerInput.responseBuilder
         .speak('I do not have any recent updates yet.')
         .withShouldEndSession(true)
         .getResponse();
     }
+
+    const when = entry.timestamp ? new Date(entry.timestamp).toLocaleString('en-US', {
+      weekday: 'short',
+      hour: 'numeric',
+      minute: '2-digit'
+    }) : 'recently';
+    const task = entry.task || 'the last task';
+    const summary = entry.summary || (entry.status === 'success' ? 'Completed successfully.' : 'Finished with an error.');
+    const speakOutput = `Most recent task on ${when}: ${task}. Result: ${summary}`;
+
     return handlerInput.responseBuilder
-      .speak(latest)
+      .speak(speakOutput)
       .withShouldEndSession(true)
       .getResponse();
   }
