@@ -102,6 +102,9 @@ The handler constructs a synthetic email envelope and streams it into
 the existing automation stack. Status intent responses read from
 `~/.codex/task-mail-runner.log` to summarize the most recent completion.
 
+Incoming Alexa requests are signature-checked using Amazon's certificate chain
+before the skill logic runs, so only genuine Alexa traffic is accepted.
+
 Copy `.env.example` to `.env`, fill in the real skill credentials from the Alexa
 developer console, and restart the process so `dotenv` can load them:
 

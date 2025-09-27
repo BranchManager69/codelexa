@@ -196,10 +196,15 @@ const skillBuilder = Alexa.SkillBuilders.custom()
   .addErrorHandlers(ErrorHandler);
 
 const app = express();
-app.use(bodyParser.json({ type: 'application/json' }));
+app.use(bodyParser.json({
+  type: 'application/json',
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString('utf8');
+  }
+}));
 
 const adapter = new ExpressAdapter(skillBuilder.create(), true, true);
-app.post('/alexa', adapter.getRequestHandlers());
+app.post('/alexa', verifyAlexaRequest, adapter.getRequestHandlers());
 
 app.get('/alexa/health', (req, res) => {
   res.json({ status: 'ok' });

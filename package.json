@@ -12,6 +12,7 @@
   "dependencies": {
     "ask-sdk-core": "^2.14.0",
     "ask-sdk-express-adapter": "^2.14.0",
+    "axios": "^1.12.2",
     "body-parser": "^2.2.0",
     "dotenv": "^17.2.2",
     "express": "^5.1.0"
