@@ -5,7 +5,7 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "deploy": "ask deploy --target skill-metadata && pm2 restart codelexa --update-env && pm2 save"
+    "deploy": "skill_id=$(node -e \"const fs=require('fs');const data=JSON.parse(fs.readFileSync('./.ask/config','utf-8'));console.log(data.deploy_settings.default.skill_id);\") && ask deploy --target skill-metadata && ask smapi update-account-linking-info -s $skill_id -g development --account-linking-request file:skill-package/account-linking.json && pm2 restart codelexa --update-env && pm2 save"
   },
   "keywords": [],
   "author": "",

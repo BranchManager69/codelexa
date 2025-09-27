@@ -54,8 +54,13 @@ function latestStatusEntry() {
   return entries.length ? entries[0] : null;
 }
 
-function enqueueTask(taskText) {
+function enqueueTask(taskText, { accessToken = null, intent = 'RunTaskIntent' } = {}) {
   const messageId = `alexa-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+  const contextLines = [`INTENT=${intent}`];
+  if (accessToken) {
+    contextLines.push(`ACCESS_TOKEN=${accessToken}`);
+  }
+  const contextBlock = contextLines.length ? `[[CONTEXT]]\n${contextLines.join('\n')}\n[[/CONTEXT]]\n\n` : '';
   const email = [
     'From: Codex Alexa <alexa@branch.bet>',
     'To: tasks@branch.bet',
@@ -63,13 +68,16 @@ function enqueueTask(taskText) {
     `Subject: Voice task - ${new Date().toISOString()}`,
     `Message-ID: <${messageId}@branch.bet>`,
     '',
-    taskText,
+    `${contextBlock}${taskText}`,
     ''
   ].join('\n');
 
   const proc = spawn('python3', [RUNNER_PATH], {
     stdio: ['pipe', 'pipe', 'pipe'],
-    env: process.env
+    env: {
+      ...process.env,
+      CODELEXA_ACCESS_TOKEN: accessToken || ''
+    }
   });
 
   let stdout = '';
@@ -113,21 +121,26 @@ function enqueueTask(taskText) {
       notificationText = `Codex encountered an error: ${summary}`;
     }
 
-    recordStatusEntry({
-      timestamp: resultTimestamp,
-      task: taskText,
-      status,
-      summary,
-      session,
-      recipients
-    });
+recordStatusEntry({
+  timestamp: resultTimestamp,
+  task: taskText,
+  status,
+  summary,
+  session,
+  recipients,
+  intent
+});
 
-    sendCompletionNotice(notificationText);
+sendCompletionNotice(notificationText);
 
-    if (code !== 0) {
-      console.error(`[codelexa] Runner exited with code ${code}`);
-    }
+if (code !== 0) {
+  console.error(`[codelexa] Runner exited with code ${code}`);
+}
   });
+}
+
+function extractAccessToken(handlerInput) {
+  return handlerInput?.requestEnvelope?.context?.System?.user?.accessToken || null;
 }
 
 const LaunchRequestHandler = {
@@ -158,7 +171,8 @@ const RunTaskIntentHandler = {
         .getResponse();
     }
 
-    enqueueTask(taskSlot);
+    const accessToken = extractAccessToken(handlerInput);
+    enqueueTask(taskSlot, { accessToken, intent: 'RunTaskIntent' });
 
     const speakOutput = `Got it. I'll let you know when Codex finishes.`;
     return handlerInput.responseBuilder
@@ -174,7 +188,8 @@ const RunSmokeTestsIntentHandler = {
       && Alexa.getIntentName(handlerInput.requestEnvelope) === 'RunSmokeTestsIntent';
   },
   handle(handlerInput) {
-    enqueueTask(SMOKE_TEST_PROMPT);
+    const accessToken = extractAccessToken(handlerInput);
+    enqueueTask(SMOKE_TEST_PROMPT, { accessToken, intent: 'RunSmokeTestsIntent' });
     const speakOutput = 'Starting the smoke tests. I will report the results when Codex finishes.';
     return handlerInput.responseBuilder
       .speak(speakOutput)
@@ -189,7 +204,8 @@ const SummarizeInboxIntentHandler = {
       && Alexa.getIntentName(handlerInput.requestEnvelope) === 'SummarizeInboxIntent';
   },
   handle(handlerInput) {
-    enqueueTask(INBOX_SUMMARY_PROMPT);
+    const accessToken = extractAccessToken(handlerInput);
+    enqueueTask(INBOX_SUMMARY_PROMPT, { accessToken, intent: 'SummarizeInboxIntent' });
     const speakOutput = 'Gathering today’s inbox summary. I will let you know once Codex finishes.';
     return handlerInput.responseBuilder
       .speak(speakOutput)
@@ -204,7 +220,8 @@ const EmailPowerRankingsIntentHandler = {
       && Alexa.getIntentName(handlerInput.requestEnvelope) === 'EmailPowerRankingsIntent';
   },
   handle(handlerInput) {
-    enqueueTask(POWER_RANKINGS_PROMPT);
+    const accessToken = extractAccessToken(handlerInput);
+    enqueueTask(POWER_RANKINGS_PROMPT, { accessToken, intent: 'EmailPowerRankingsIntent' });
     const speakOutput = 'Generating the fantasy power rankings and emailing the write-up. I will notify you when it is complete.';
     return handlerInput.responseBuilder
       .speak(speakOutput)

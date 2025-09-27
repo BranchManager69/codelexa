@@ -115,8 +115,25 @@ codelexa/
 
 ### 4. Deploy new intents & models
 - Edit `skill-package/interactionModels/custom/en-US.json`.
-- Run `ask deploy --target interaction-model`.
+- Run `npm run deploy` to push the manifest + interaction model and restart the pm2 service.
 - Update the Express handler if the intent shape changes.
+
+## Account Linking
+- This skill uses Dexter’s OAuth flow (PKCE). The production manifest references client ID `dcr_9ed153158feb5e4c8b49fd0368f6cf04` with redirect `https://pitang8831.execute-api.us-east-2.amazonaws.com/dev/alexa`.
+- To mint a new client, run:
+  ```bash
+  curl -X POST https://dexter.cash/mcp/dcr/register \
+    -H "Content-Type: application/json" \
+    -d '{
+      "redirect_uris": ["https://pitang8831.execute-api.us-east-2.amazonaws.com/dev/alexa"],
+      "grant_types": ["authorization_code"],
+      "response_types": ["code"],
+      "token_endpoint_auth_method": "none",
+      "metadata": { "client_name": "codex-alexa" }
+    }'
+  ```
+- Update `skill-package/skill.json` with the new `clientId` (and redirect if it changes), then run `npm run deploy`.
+- Users enabling the skill will be prompted to sign in through Dexter; Alexa stores the bearer token and includes it in each request.
 
 ## Configuration Cheat Sheet
 | Setting | Default | Purpose | Change when |

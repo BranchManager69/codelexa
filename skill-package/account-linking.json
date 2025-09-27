@@ -1,0 +1,20 @@
+{
+  "accountLinkingRequest": {
+    "type": "AUTH_CODE",
+    "authorizationUrl": "https://dexter.cash/mcp/authorize",
+    "accessTokenUrl": "https://dexter.cash/mcp/token",
+    "clientId": "dcr_9ed153158feb5e4c8b49fd0368f6cf04",
+    "clientSecret": "unused-client-secret",
+    "scopes": [
+      "wallet.read",
+      "wallet.trade",
+      "openid"
+    ],
+    "domains": [
+      "dexter.cash"
+    ],
+    "redirectUrls": [
+      "https://pitang8831.execute-api.us-east-2.amazonaws.com/dev/alexa"
+    ]
+  }
+}
