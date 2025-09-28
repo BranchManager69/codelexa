@@ -9,10 +9,12 @@ const fs = require('fs');
 const path = require('path');
 const { sendCompletionNotice } = require('./notifier');
 const { verifyAlexaRequest } = require('./signatureVerifier');
+const pkg = require('../package.json');
 
 const RUNNER_PATH = '/home/branchmanager/bin/codex-task-runner.py';
 const STATUS_PATH = path.join(process.env.HOME || '/home/branchmanager', '.codex', 'codelexa-status.json');
 const PORT = process.env.CODELEXA_PORT || 4090;
+const APP_VERSION = pkg.version || '0.0.0';
 
 const SMOKE_TEST_PROMPT = `Run the full smoke test suite across all deployed services (dexter API/FE, branch.bet, pumpstreams, fantasy, redis, etc.).
 Report service health, failing checks, and remediation actions. Keep the final summary under 450 characters and highlight any failures.`;
@@ -52,6 +54,96 @@ function recordStatusEntry(entry) {
 function latestStatusEntry() {
   const entries = loadStatusEntries();
   return entries.length ? entries[0] : null;
+}
+
+function buildRunnerStatus() {
+  const info = {
+    path: RUNNER_PATH,
+    exists: false,
+    executable: false,
+    size: null,
+    mtime: null
+  };
+
+  try {
+    const stats = fs.statSync(RUNNER_PATH);
+    info.exists = true;
+    info.size = stats.size;
+    info.mtime = stats.mtime.toISOString();
+    try {
+      fs.accessSync(RUNNER_PATH, fs.constants.X_OK);
+      info.executable = true;
+    } catch (err) {
+      info.executable = false;
+    }
+  } catch (err) {
+    info.exists = false;
+  }
+
+  return info;
+}
+
+function buildNotificationStatus() {
+  const requiredKeys = ['ALEXA_SKILL_ID', 'ALEXA_CLIENT_ID', 'ALEXA_CLIENT_SECRET'];
+  const missing = requiredKeys.filter(key => !process.env[key]);
+
+  return {
+    configured: missing.length === 0,
+    missing
+  };
+}
+
+function buildHealthReport() {
+  const now = new Date();
+  const entries = loadStatusEntries();
+  const runner = buildRunnerStatus();
+  const notifications = buildNotificationStatus();
+  const latest = entries.length ? entries[0] : null;
+
+  const issues = [];
+  if (!runner.exists) {
+    issues.push('runner_missing');
+  } else if (!runner.executable) {
+    issues.push('runner_not_executable');
+  }
+  if (!notifications.configured) {
+    issues.push('notifications_unconfigured');
+  }
+
+  const status = issues.length === 0 ? 'ok' : (runner.exists || notifications.configured ? 'degraded' : 'error');
+
+  const latestTimestamp = latest?.timestamp ? new Date(latest.timestamp) : null;
+  const latestAgeSeconds = latestTimestamp ? Math.max(0, Math.round((now - latestTimestamp) / 1000)) : null;
+
+  return {
+    service: 'codelexa',
+    status,
+    issues,
+    version: APP_VERSION,
+    timestamp: now.toISOString(),
+    uptime_seconds: Math.round(process.uptime()),
+    port: Number(PORT),
+    node_env: process.env.NODE_ENV || null,
+    runner,
+    notifications,
+    history_count: entries.length,
+    recent_tasks: entries.slice(0, 5).map(entry => ({
+      timestamp: entry.timestamp,
+      task: entry.task,
+      status: entry.status,
+      summary: entry.summary,
+      intent: entry.intent,
+      recipient_count: Array.isArray(entry.recipients) ? entry.recipients.length : 0
+    })),
+    latest_task: latest ? {
+      timestamp: latest.timestamp,
+      age_seconds: latestAgeSeconds,
+      status: latest.status,
+      summary: latest.summary,
+      task: latest.task,
+      intent: latest.intent
+    } : null
+  };
 }
 
 function enqueueTask(taskText, { accessToken = null, intent = 'RunTaskIntent' } = {}) {
@@ -353,7 +445,12 @@ const adapter = new ExpressAdapter(skillBuilder.create(), true, true);
 app.post('/alexa', verifyAlexaRequest, adapter.getRequestHandlers());
 
 app.get('/alexa/health', (req, res) => {
-  res.json({ status: 'ok' });
+  try {
+    res.json(buildHealthReport());
+  } catch (err) {
+    console.error('[codelexa] Failed to build health report', err);
+    res.status(500).json({ status: 'error', message: err.message });
+  }
 });
 
 app.listen(PORT, () => {
