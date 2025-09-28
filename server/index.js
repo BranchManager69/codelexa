@@ -13,6 +13,7 @@ const pkg = require('../package.json');
 
 const RUNNER_PATH = '/home/branchmanager/bin/codex-task-runner.py';
 const STATUS_PATH = path.join(process.env.HOME || '/home/branchmanager', '.codex', 'codelexa-status.json');
+const DEXTER_HEALTH_PATH = path.join(process.env.HOME || '/home/branchmanager', '.codex', 'dexter-health.json');
 const PORT = process.env.CODELEXA_PORT || 4090;
 const APP_VERSION = pkg.version || '0.0.0';
 
@@ -54,6 +55,43 @@ function recordStatusEntry(entry) {
 function latestStatusEntry() {
   const entries = loadStatusEntries();
   return entries.length ? entries[0] : null;
+}
+
+function loadDexterHealthSnapshot() {
+  try {
+    const raw = fs.readFileSync(DEXTER_HEALTH_PATH, 'utf-8');
+    return JSON.parse(raw);
+  } catch (err) {
+    return null;
+  }
+}
+
+function summarizeDeepSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object') return null;
+  const summary = {
+    ok: Boolean(snapshot.ok),
+    timestamp: snapshot.timestamp || null,
+    duration_ms: typeof snapshot.duration_ms === 'number' ? snapshot.duration_ms : null,
+    realtime: snapshot.realtime
+      ? {
+          ok: Boolean(snapshot.realtime.ok),
+          error: snapshot.realtime.error || null,
+        }
+      : null,
+    connectors: {},
+  };
+  if (snapshot.connectors && typeof snapshot.connectors === 'object') {
+    for (const [name, data] of Object.entries(snapshot.connectors)) {
+      if (!data || typeof data !== 'object') continue;
+      summary.connectors[name] = {
+        ok: Boolean(data.ok),
+        duration_ms: typeof data.duration_ms === 'number' ? data.duration_ms : null,
+        supabase_user_id: data.supabase_user_id || null,
+        error: data.error || null,
+      };
+    }
+  }
+  return summary;
 }
 
 function buildRunnerStatus() {
@@ -99,6 +137,7 @@ function buildHealthReport() {
   const runner = buildRunnerStatus();
   const notifications = buildNotificationStatus();
   const latest = entries.length ? entries[0] : null;
+  const deepSnapshot = summarizeDeepSnapshot(loadDexterHealthSnapshot());
 
   const issues = [];
   if (!runner.exists) {
@@ -142,7 +181,8 @@ function buildHealthReport() {
       summary: latest.summary,
       task: latest.task,
       intent: latest.intent
-    } : null
+    } : null,
+    deep_probe: deepSnapshot
   };
 }
 
