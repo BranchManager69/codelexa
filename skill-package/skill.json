@@ -21,7 +21,7 @@
     "apis": {
       "custom": {
         "endpoint": {
-          "uri": "https://branch.bet/alexa"
+          "uri": "https://alexa.branch.bet/alexa"
         }
       }
     },

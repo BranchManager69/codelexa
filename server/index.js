@@ -3,7 +3,6 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const Alexa = require('ask-sdk-core');
-const { ExpressAdapter } = require('ask-sdk-express-adapter');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -481,8 +480,18 @@ app.use(bodyParser.json({
   }
 }));
 
-const adapter = new ExpressAdapter(skillBuilder.create(), true, true);
-app.post('/alexa', verifyAlexaRequest, adapter.getRequestHandlers());
+const skill = skillBuilder.create();
+
+app.post('/alexa', async (req, res) => {
+  try {
+    await verifyAlexaRequest(req);
+    const responseEnvelope = await skill.invoke(req.body, req.headers);
+    res.json(responseEnvelope);
+  } catch (err) {
+    console.error('[codelexa] Error handling Alexa request', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 app.get('/alexa/health', (req, res) => {
   try {

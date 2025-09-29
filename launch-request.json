@@ -1,0 +1,34 @@
+{
+  "version": "1.0",
+  "session": {
+    "new": true,
+    "sessionId": "amzn1.echo-api.session.test",
+    "application": {
+      "applicationId": "amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d"
+    },
+    "attributes": {},
+    "user": {
+      "userId": "amzn1.ask.account.test"
+    }
+  },
+  "context": {
+    "System": {
+      "application": {
+        "applicationId": "amzn1.ask.skill.b4347dae-06f3-415c-b5d0-12f68537241d"
+      },
+      "user": {
+        "userId": "amzn1.ask.account.test"
+      },
+      "device": {
+        "deviceId": "amzn1.ask.device.test",
+        "supportedInterfaces": {}
+      }
+    }
+  },
+  "request": {
+    "type": "LaunchRequest",
+    "requestId": "amzn1.echo-api.request.test",
+    "locale": "en-US",
+    "timestamp": "2025-09-29T01:28:28Z"
+  }
+}
