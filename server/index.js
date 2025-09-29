@@ -15,6 +15,29 @@ const STATUS_PATH = path.join(process.env.HOME || '/home/branchmanager', '.codex
 const DEXTER_HEALTH_PATH = path.join(process.env.HOME || '/home/branchmanager', '.codex', 'dexter-health.json');
 const PORT = process.env.CODELEXA_PORT || 4090;
 const APP_VERSION = pkg.version || '0.0.0';
+const MAX_SPEECH_CHARS = 700;
+
+function sanitizeForSpeech(text) {
+  if (!text) {
+    return '';
+  }
+
+  let cleaned = text
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/__(.*?)__/g, '$1')
+    .replace(/`+/g, '')
+    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+    .replace(/https?:\/\/\S+/g, ' link ')
+    .replace(/[<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (cleaned.length > MAX_SPEECH_CHARS) {
+    cleaned = `${cleaned.slice(0, MAX_SPEECH_CHARS - 1)}…`;
+  }
+
+  return cleaned;
+}
 
 const SMOKE_TEST_PROMPT = `Run the full smoke test suite across all deployed services (dexter API/FE, branch.bet, pumpstreams, fantasy, redis, etc.).
 Report service health, failing checks, and remediation actions. Keep the final summary under 450 characters and highlight any failures.`;
@@ -380,8 +403,9 @@ const GetStatusIntentHandler = {
       hour: 'numeric',
       minute: '2-digit'
     }) : 'recently';
-    const task = entry.task || 'the last task';
-    const summary = entry.summary || (entry.status === 'success' ? 'Completed successfully.' : 'Finished with an error.');
+    const task = sanitizeForSpeech(entry.task || 'the last task');
+    const summaryText = entry.summary || (entry.status === 'success' ? 'Completed successfully.' : 'Finished with an error.');
+    const summary = sanitizeForSpeech(summaryText);
     const speakOutput = `Most recent task on ${when}: ${task}. Result: ${summary}`;
 
     return handlerInput.responseBuilder
